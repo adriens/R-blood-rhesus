@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/adriens/R-blood-rhesus.svg?branch=master)](https://travis-ci.org/adriens/R-blood-rhesus)
 
-# R-blood-rhesus
+# R-blood-rhesus : a data-centric story stelling experience
 
 A Rmarkdown report on blood rhesus, all in pure  R (no addition csv nor database required). To play with it, just open the [Rmarkdown](http://rmarkdown.rstudio.com/lesson-1.html) and compile it to get the output Rapport.
 
