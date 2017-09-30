@@ -4,6 +4,10 @@
 
 A Rmarkdown report on blood rhesus, all in pure  R (no addition csv nor database required). To play with it, just open the [Rmarkdown](http://rmarkdown.rstudio.com/lesson-1.html) and compile it to get the output Rapport.
 
+# Project status
+
+This is a Work In Progress Project, only developed on WE spare time.
+
 # Inception
 
 Once at lunchtime with colleagues we began to talk about [blood giving](http://www.adsbnc.org/index.php?option=com_content&view=article&id=5&Itemid=7), and we finally were asking ourselves who could give to who, etc... We rapidly noticed that we were not really aware of that.
