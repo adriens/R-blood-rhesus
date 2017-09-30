@@ -1,2 +1,9 @@
 language: r
 cache: packages
+addons:
+  apt:
+    packages:
+      - libxml2-dev
+install:
+  - Rscript -e 'install.packages("ggplot2")'
+  
