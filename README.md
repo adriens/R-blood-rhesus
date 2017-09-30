@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/adriens/R-blood-rhesus.svg?branch=master)](https://travis-ci.org/adriens/R-blood-rhesus)
+
 # R-blood-rhesus
 
 A Rmarkdown report on blood rhesus, all in pure  R (no addition csv nor database required). To play with it, just open the [Rmarkdown](http://rmarkdown.rstudio.com/lesson-1.html) and compile it to get the output Rapport.
@@ -23,3 +25,4 @@ The report is based on sections, to contribute, please :
 - [ ] Play with charts and organize data from native R directives
 - [ ] Learn to tell stories out of R
 - [ ] Build a base of code and code samples to reuse in other projects
+- [ ] Discover and imagine all the things i can do in continuous build within R reporting
