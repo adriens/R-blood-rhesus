@@ -1,0 +1,19 @@
+Package: Blood-rhesus
+Title: Some R reports about blood rhesus
+Version: 1.0
+Authors@R: c(
+    person("Adrien", "Sales", , "Adrien.Sales@gmail.com", role = c("aut", "cre"))
+    )
+Encoding: UTF-8
+Description: Collection of package development tools.
+URL: https://github.com/adriens/R-blood-rhesus
+BugReports: https://github.com/adriens/R-blood-rhesus/issues
+Depends:
+    R (>= 3.0.2),
+    usethis
+Imports:
+
+Suggests:
+    
+VignetteBuilder: knitr
+RoxygenNote: 6.0.1
