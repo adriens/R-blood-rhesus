@@ -11,23 +11,44 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Load datas
 
-```{r , fig.width=13,fig.height=12}
-library(stringr)
-id <- c("O-", "O+", "B-", "B+", "A-", "A+", "AB-", "AB+")
+First, let's load the datas, right from R (no need to load csv) so it's easier to share this reports. As the base data is not that big, it's pretty convenient.
 
-## 
+First load the groups (with embedded Rhesus) :
+
+```{r}
+id <- c("O-", "O+", "B-", "B+", "A-", "A+", "AB-", "AB+")
+```
+
+Next, create the function that extracts the group, that is, makes it easy to extract the Rhesus (Rh+ or Rh-) from a full group :
+
+```{r}
+library(stringr)
+
 get_groupe <- function(agroupe){
   out <- ""
   out <- str_replace_all(agroupe, "[^[:alnum:]]", "")
-
   return(out)
 }
+```
 
-#test <- get_groupe("AB-")
-#test
+And give a try to the function :
+
+```{r}
+test <- get_groupe("AB-")
+test
+```
+
+Next, buld the vector that stores the extracted groups, thanks to the previsouly created function :
+
+
+```{r}
 groupe <- lapply(id, get_groupe)
-groupe
+head(groupe)
+```
 
+Now, let's deal with rhesus : at first, create the function that extracts the rhesus from a given group :
+
+```{r}
 # get rhesus
 get_rhesus <- function(agroupe){
   if(grepl('-', agroupe)){
@@ -36,86 +57,168 @@ get_rhesus <- function(agroupe){
     return("Rh+")
   }
 }
-#test <- get_rhesus("AB+")
-#test
-#test <- get_rhesus("O-")
-#test
+```
+... and try to call it :
+
+```{r}
+test <- get_rhesus("AB+")
+test
+test <- get_rhesus("O-")
+test
+```
+
+Next, build the list of rhesus by appling the function :
+
+```{r}
 rhesus <- lapply(id, get_rhesus)
-rhesus
+head(rhesus)
+```
 
+Next, just store the available groups distribution accross the population :
+
+```{r}
 rate <- c(7,39, 1.5, 7.5, 6, 36, 0.5, 2.5)
-rate
+```
 
-# buidl the data frame
+Nxt, build the datas needed for the network display, that is : nodes et edges :
+
+```{r}
+# build the data frame for the nodes
 nodes <- cbind(id, groupe, rhesus, rate)
-nodes
+head(nodes)
 
 ## now, build the edges
 edges <- cbind(c("O-", "O-", "O-","O-","O-","O-","O-","O-", "O+","O+","O+","O+","B-","B-","B-","B-","B+","B+","A-","A-","A-","A-","A+","A+","AB-","AB-","AB+"),
           c("AB+","AB-","A+","A-","B+","B-","O+","O-","AB+","A+","B+","O+","AB+","AB-","B+","B-","AB+","B+", "AB+", "AB-", "A+", "A-", "AB+", "A+", "AB+", "AB-", "AB+"))
-edges
+head(edges)
+```
 
-## build a first graph
+## Charts
+
+We have the datas to created charts
+
+### Piechart on groups distribution
+
+At first, I'm asking myself which group is the most common :
+
+```{r}
+piechart_df <- data.frame(
+  group = id,
+  value = rate
+)
+head(piechart_df)
+
+library(ggplot2)
+# Barplot
+bp<- ggplot(piechart_df, aes(x="", y=value, fill=group))+
+geom_bar(width = 1, stat = "identity")
+#bp
+
+pie <- bp + coord_polar("y", start=0)
+pie
+
+```
+
+Still to do : give a try to faceting by rhesus, see https://www.r-bloggers.com/pie-charts-in-ggplot2/
+
+## Graph relationships
+
+The main question was to show the easy way who can give blood to who, this is made through graph objects :
+
+First, prepare the datas :
+
+```{r, echo=FALSE}
 library(igraph)
 net <- graph_from_data_frame(d=edges, vertices=nodes, directed=T) 
 V(net)$size <- degree(net, mode = "in")*3
 
-plot(net,
-     edge.arrow.size=.4,
-     vertex.label.dist=3,
-     #vertex.label=NA,
-     
-     layout=layout.fruchterman.reingold
-     )
+```
 
-## circular
+Ready to draw with a circular layout which suits the best this graph :
+
+
+```{r , fig.width=13,fig.height=12}
 plot(net,
      edge.arrow.size=.7,
      vertex.label.dist=3,
-     ##vertex.label=NA,
      layout=layout_in_circle
      )
-
-#library("networkD3")
-#networkData <- cbind(edges, nodes)
-#simpleNetwork(as.data.frame(networkData))
-
-
 ```
 
-## Echanges entre rhesus
+We can see clealy who can give blood to who, ie. who is compatible with who. We keep loops on the networks as it's a reality that a people of the same group can exchange blood with each others (A+ is compatible with A+).
 
-```{r,echo=FALSE}
-#edges
-#class(edges)
+The size of the nodes are mapped on the degree of incoming edges : the bigger a node is, the best it is as i means that it can receive from a wider ranger of people...at the opposite : the more little you are, the more you are isolated, take a look at the O- node : he can give to everybody  but only can receive from O- (check the local loop).
+
+## Compatibilty between rhesus
+
+The question is to detect if there is a global rule of compatibility between rhesus.
+
+Therefore, we need to prepare, that is, in our case make somme aggregation.
+
+First, on the edges (relations between groups compatibility), replace each group by its rhesus : 
+
+```{r}
 rhesus_edges <- apply(edges, c(1,2), get_rhesus)
-#rhesus_edges
+head(rhesus_edges)
+```
 
+Once this done just aggregate and count occurrences by grouping them :
+
+```{r}
+
+# Add a column to compute the weight of the relation
 rhesus_aggreg <- data.frame(rhesus_edges)
 rhesus_aggreg["weight"] <- 1
-#rhesus_aggreg
 
+# Next, compute the count
 weighted_rhesus_edges <- aggregate(rhesus_aggreg[c("weight")], by=list(rhesus_from=rhesus_aggreg$X1, rhesus_to=rhesus_aggreg$X2), FUN=sum, na.rm=TRUE)
-#weighted_rhesus_edges
+weighted_rhesus_edges
 
-#class(rhesus)
+# Let's build a list of unique rhesus as they will become the nodes of the graph
 unique_rhesus <- unique(weighted_rhesus_edges$rhesus_from)
+```
+
+Ready to plot, and to make things even easier to read, let's remove loops on the graph :
+
+```{r}
 # now plot relations between rhesus
 net <- graph_from_data_frame(d=weighted_rhesus_edges, vertices=unique_rhesus, directed=T) 
-V(net)$size <- degree(net, mode = "in")*5
-#E(net)$weight <- weighted_rhesus_edges$weight
+net <- simplify(net, remove.loops = TRUE)
 
-plot(net, edge.arrow.size=.4,
-     vertex.label.dist=3,
-     #vertex.label=NA,
-     layout=layout.fruchterman.reingold)
-
-
-
-
-#library("networkD3")
-#networkData <- cbind(weighted_rhesus_edges$rhesus_from, weighted_rhesus_edges$rhesus_to)
-#simpleNetwork(as.data.frame(networkData))
-
+plot(net, edge.arrow.size=.5,
+     vertex.label.dist=3)
 ```
+
+With this last graph, it's very clear that the Rh- are the givers...and the Rh+ the receivers : Rh- give to people like them and to the others while Rh+ only give to people like themselves...a bit like a selfish rhesus ;-p
+
+In other terms, Rh- people are isolated...from the others. We can see that in a more "numercial" way by taking a look at the distances matrix, so we can get the shortest path length between rhesus :
+
+```{r}
+net <- graph_from_data_frame(d=rhesus_edges, vertices=unique_rhesus, directed=T) 
+
+shortest.paths(net, v=V(net), mode = c("in"),
+      weights = NULL)
+```
+
+The shortest path  from Rh+ to Rh- is a path... of an infinite length (Inf) ; in other terms, there literally is no way for a group from RH+ to give to a Rh-.
+
+### Distances matrix between groups
+
+To see a more detailed report on compatibility path between groups, just get the matrix of shortes paths as shown below :
+
+
+```{r}
+net <- graph_from_data_frame(d=edges, vertices=id, directed=T) 
+
+shortest.paths(net, v=V(net), mode = c("in"),
+      weights = NULL)
+```
+
+As we can see, we only get distances equal to :
+
+- 0 : from a group to the same group
+- 1 : direct giver
+- Inf (there is no path)
+
+I first wondered if there could be path of length == 2, as is there could be transitions in blood compatibility (A can give to C and C can give to B...but A cannot give to B), but there wasn't.
 
