@@ -109,10 +109,10 @@ piechart_df <- data.frame(
 head(piechart_df)
 
 library(ggplot2)
-# Barplot
+
 bp<- ggplot(piechart_df, aes(x="", y=value, fill=group))+
 geom_bar(width = 1, stat = "identity")
-#bp
+
 
 pie <- bp + coord_polar("y", start=0)
 pie
