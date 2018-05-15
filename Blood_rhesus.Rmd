@@ -3,6 +3,7 @@ title: "Blood Rhesus"
 output:
   html_document: default
   word_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -11,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Load datas
 
-First, let's load the datas, right from R (no need to load csv) so it's easier to share this reports. As the base data is not that big, it's pretty convenient.
+First, let's load the datas, right from R (no need to load csv) so it's easier to share this report. As the base data is not that big, it's pretty convenient.
 
 First load the groups (with embedded Rhesus) :
 
@@ -67,7 +68,7 @@ test <- get_rhesus("O-")
 test
 ```
 
-Next, build the list of rhesus by appling the function :
+Next, build the list of rhesus by applying the function :
 
 ```{r}
 rhesus <- lapply(id, get_rhesus)
@@ -80,7 +81,7 @@ Next, just store the available groups distribution accross the population :
 rate <- c(7,39, 1.5, 7.5, 6, 36, 0.5, 2.5)
 ```
 
-Nxt, build the datas needed for the network display, that is : nodes et edges :
+Next, build the datas needed for the network display, that is : nodes et edges :
 
 ```{r}
 # build the data frame for the nodes
@@ -95,7 +96,7 @@ head(edges)
 
 ## Charts
 
-We have the datas to created charts
+We have the datas to create the charts
 
 ### Piechart on groups distribution
 
@@ -119,7 +120,6 @@ pie
 
 ```
 
-Still to do : give a try to faceting by rhesus, see https://www.r-bloggers.com/pie-charts-in-ggplot2/
 
 ## Graph relationships
 
@@ -145,7 +145,7 @@ plot(net,
      )
 ```
 
-We can see clealy who can give blood to who, ie. who is compatible with who. We keep loops on the networks as it's a reality that a people of the same group can exchange blood with each others (A+ is compatible with A+).
+We can see clearly who can give blood to who, ie. who is compatible with who. We keep loops on the networks as it's a reality that a people of the same group can exchange blood with each others (A+ is compatible with A+).
 
 The size of the nodes are mapped on the degree of incoming edges : the bigger a node is, the best it is as i means that it can receive from a wider ranger of people...at the opposite : the more little you are, the more you are isolated, take a look at the O- node : he can give to everybody  but only can receive from O- (check the local loop).
 
@@ -191,7 +191,7 @@ plot(net, edge.arrow.size=.5,
 
 With this last graph, it's very clear that the Rh- are the givers...and the Rh+ the receivers : Rh- give to people like them and to the others while Rh+ only give to people like themselves...a bit like a selfish rhesus ;-p
 
-In other terms, Rh- people are isolated...from the others. We can see that in a more "numercial" way by taking a look at the distances matrix, so we can get the shortest path length between rhesus :
+In other terms, Rh- people are isolated...from the others. We can see that in a more "numerical" way by taking a look at the distances matrix, so we can get the shortest path length between rhesus :
 
 ```{r}
 net <- graph_from_data_frame(d=rhesus_edges, vertices=unique_rhesus, directed=T) 
